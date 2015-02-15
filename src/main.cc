@@ -30,7 +30,6 @@ void command(int argc, char* argv[]){
 
 }
 
-
 int main(int argc, char* argv[]){
 
     command(argc,argv);
@@ -42,7 +41,8 @@ int main(int argc, char* argv[]){
         fprintf(stderr,"%s\n",file);
         engine.execFile(file);
     }
-    else if(code){
+
+    if(code){
         fprintf(stderr,"%s\n",code);
         engine.execCode(code);
     }

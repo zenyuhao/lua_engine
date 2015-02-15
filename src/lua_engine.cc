@@ -22,6 +22,7 @@ bool LuaEngine::execFunc(int args){
     int func_index = - ( args + 1 );
 
     if (!lua_isfunction(_L, func_index)){
+        fprintf(stderr,"first stack is not a function\n");
         lua_pop(_L, args + 1);                // pop func and args
         return false;
     }
@@ -29,9 +30,11 @@ bool LuaEngine::execFunc(int args){
     int traceback = 0;
     lua_getglobal(_L, "__TRACKBACK__");       /* L: ... func arg1 arg2 ... G */
     if (!lua_isfunction(_L, -1)){
+        fprintf(stderr,"not found trackback %s \n", lua_tostring(_L, -1));
         lua_pop(_L, 1);                       /* L: ... func arg1 arg2 ... */
     }
     else{
+        fprintf(stderr,"found trackback\n");
         lua_insert(_L, func_index - 1);       /* L: ... G func arg1 arg2 ... */
         traceback = func_index - 1;
     }
@@ -61,12 +64,11 @@ bool LuaEngine::execFunc(int args){
     // remove return value from stack
     lua_pop(_L, 1);                                                /* L: ... [G] */
     if (traceback){
-        lua_pop(_L, 1); // remove __G__TRACKBACK__ from stack      /* L: ... */
+        lua_pop(_L, 1); // remove __TRACKBACK__ from stack      /* L: ... */
     }
 
     return true;
 }
-
 
 bool LuaEngine::execCode(const char* codes){
     luaL_loadstring(_L, codes);
@@ -79,7 +81,6 @@ bool LuaEngine::execFile(const char* path){
     codes.append("\"");
     return execCode(codes.c_str());
 }
-
 
 void LuaEngine::addPackagePath(const char* path){
 

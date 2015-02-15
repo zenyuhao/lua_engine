@@ -42,9 +42,9 @@ endif
 
 ### BUILD TAGET ###
 LUA_ENGINE_BIN = $(INSTALL)/bin/lua_engine
-LUA_ENGINE_AR = $(INSTALL)/lib/liblua_engine.a
+LUA_ENGINE_LIB = $(INSTALL)/lib/liblua_engine.so
 
-all:depend binary summary
+all:depend binary library summary
 
 clean:
 	rm -rf $(INSTALL)/bin
@@ -55,6 +55,8 @@ cleanall : clean
 	make -C $(DEPEND)/lua clean
 
 binary:$(LUA_ENGINE_BIN)
+
+library:$(LUA_ENGINE_LIB)
 
 depend:
 	make -C $(DEPEND)/lua $(LUA_FLAGS)
@@ -70,15 +72,33 @@ summary:
 	@echo LUA_LIB = ${LUA_LIB}
 	@echo ------------------------------------------------
 
-LUA_ENGINE_OBJ = $(BUILD)/lua_engine.o
-LUA_MAIN_OBJ = $(BUILD)/main.o
+LUA_ENGINE_BIN_OBJ = $(BUILD)/lua_engine.o \
+                     $(BUILD)/main.o
 
-$(LUA_ENGINE_BIN): $(LUA_ENGINE_OBJ) $(LUA_MAIN_OBJ) $(LUA_LIB)
+LUA_ENGINE_LIB_OBJ = $(BUILD)/base_object.o \
+                     $(BUILD)/object_proxy.o \
+                     $(BUILD)/libentry.o
+
+$(LUA_ENGINE_BIN): $(LUA_ENGINE_BIN_OBJ) $(LUA_LIB)
 	mkdir -p $(INSTALL)/bin
-	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LIBRARY) $(LDFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS)
 
+$(LUA_ENGINE_LIB): $(LUA_ENGINE_LIB_OBJ) $(LUA_LIB)
+	mkdir -p $(INSTALL)/lib
+	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(SHARED)
+
+### LUA ENGINE ###
 $(BUILD)/lua_engine.o: src/lua_engine.cc
 	$(CC) -c -o $@ $^  $(CFLAGS)  $(INCLUDE)
 
 $(BUILD)/main.o: src/main.cc
+	$(CC) -c -o $@ $^  $(CFLAGS)  $(INCLUDE)
+
+$(BUILD)/base_object.o: src/base_object.cc
+	$(CC) -c -o $@ $^  $(CFLAGS)  $(INCLUDE)
+
+$(BUILD)/object_proxy.o: src/object_proxy.cc
+	$(CC) -c -o $@ $^  $(CFLAGS)  $(INCLUDE)
+
+$(BUILD)/libentry.o: src/libentry.cc
 	$(CC) -c -o $@ $^  $(CFLAGS)  $(INCLUDE)
